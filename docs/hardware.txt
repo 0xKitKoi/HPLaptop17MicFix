@@ -1,0 +1,19 @@
+System Product Name:
+HP Laptop 17-cp2xxx
+
+System Manufacturer:
+HP
+
+Baseboard:
+8DC5
+
+Kernel:
+7.0.0-22-generic
+
+Audio Devices:
+AMD ACP6x
+ALC236
+
+Result:
+Internal DMIC unavailable before patch.
+Internal DMIC available after patch.

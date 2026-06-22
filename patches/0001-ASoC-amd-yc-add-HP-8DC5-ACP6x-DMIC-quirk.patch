@@ -1,0 +1,52 @@
+From 304b6cc03d2c5e5bd0cb833da2f8d2c022839923 Mon Sep 17 00:00:00 2001
+From: Shawn Adams <0xShawnAdams@gmail.com>
+Date: Mon, 22 Jun 2026 12:37:57 -0700
+Subject: [PATCH] ASoC: amd: yc: add HP 8DC5 ACP6x DMIC quirk
+
+HP Laptop 17-cp2xxx systems using motherboard 8DC5 contain an
+ACP6x digital microphone which is not exposed by the driver.
+
+The ACP6x machine driver exits early when the ACPI _WOV method
+reports Wake-on-Voice disabled, preventing DMI overrides from
+being evaluated.
+
+Add a DMI quirk for HP board 8DC5 and allow probe to continue
+to the DMI override table when _WOV is disabled.
+
+This enables the internal DMIC on affected systems.
+
+Signed-off-by: Shawn Adams [0xShawnAdams@gmail.com](mailto:0xShawnAdams@gmail.com)
+---
+ sound/soc/amd/yc/acp6x-mach.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/sound/soc/amd/yc/acp6x-mach.c b/sound/soc/amd/yc/acp6x-mach.c
+index aa62009..5a96167 100644
+--- a/sound/soc/amd/yc/acp6x-mach.c
++++ b/sound/soc/amd/yc/acp6x-mach.c
+@@ -745,6 +745,13 @@ static const struct dmi_system_id yc_acp_quirk_table[] = {
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "M7601RM"),
+ 		}
+ 	},
++	{
++		.driver_data = &acp6x_card,
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "HP"),
++			DMI_MATCH(DMI_BOARD_NAME, "8DC5"),
++		}
++	},
+ 	{}
+ };
+ 
+@@ -777,7 +784,7 @@ static int acp6x_probe(struct platform_device *pdev)
+ 	if (!ACPI_FAILURE(ret)) {
+ 		wov_en = dmic_status;
+ 		if (!wov_en)
+-			return -ENODEV;
++			goto check_dmi_entry;
+ 	} else {
+ 		/* Incase of ACPI method read failure then jump to check_dmi_entry */
+ 		goto check_dmi_entry;
+-- 
+2.53.0
+
